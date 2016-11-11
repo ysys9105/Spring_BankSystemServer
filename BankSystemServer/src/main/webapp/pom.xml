@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.atglab</groupId>
+	<artifactId>bank</artifactId>
+	<name>BANK_SYSTEM_SERVER</name>
+	<packaging>war</packaging>
+	<version>1.0.0-BUILD-SNAPSHOT</version>
+	<dependencies>
+	
+		<!--
+			Spring Web MVC 를 사용하기 위한 라이브러리를 추가한다.
+			Web MVC 는 Controller, Model, View 로 이루어져 있는 것.
+			ViewResolver, DispatcherServlet, EncodingFilter 등등이
+			포함되어 있다.
+		-->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>4.1.6.RELEASE</version>
+			<!-- 
+				Spring 은 Commons-logging 을 이용해서 로그를 남긴다.
+				프로젝트에서는 commons-logging을 사용하지 않고
+				logback을 사용하기 때문에
+				충돌 제거를 위해 commons-logging 은 제외하고
+				import 한다.
+			-->
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<!-- 
+			원래 Hibernate 는 ORM Framework 인데,
+			동일 개발사에서 Web Parameter 를 검증할 수 있는
+			Validator 를 개발함. -> hibernate-validator
+			hibernate-validator는 Command 객체로 파라미터를 받을 때
+			@Valid Annotation을 이용해서 파라미터 검증을 한다.
+			이 라이브러리에는
+			@NotEmpty, @NotBlank, @Length, @Range, @Email, @URL 
+			Annotation이 포함되어 있다.
+		-->
+			
+		<!-- 
+			JSTL : Java Standard Tag Libraries
+			JSTL과 Standard 는 서로 의존적인 라이브러리들이다.
+			JSP에서 JSTL Taglib을 사용하기 위함이며
+			가장 빈번하게 사용되는 JSTL Taglib는 core이다.
+			core library는 
+			c:if, c:choose, c:when, c:out, c:url, c:set 등등이
+			등록되어 있다.
+		-->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>taglibs</groupId>
+			<artifactId>standard</artifactId>
+			<version>1.1.2</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/javax.servlet/servlet-api -->
+		<dependency>
+		    <groupId>javax.servlet</groupId>
+		    <artifactId>servlet-api</artifactId>
+		    <version>2.5</version>
+		</dependency>
+		
+		<!-- 
+			단위 테스트 툴인 JUNIT을 Spring에서 사용하기 편하게
+			추상화 시켜놓은 라이브러리다.
+			JUnit이 Spring Context XML File을 Load 해
+			사용할 수 있도록 지원해준다.
+			@RunWith, @ContextConfiguration Annotation을 
+			포함하고 있다.
+			
+			Spring 교재안 84 페이지 참고.
+			@RunWith(SpringJUnit4ClassRunner.class)
+			@ContextConfiguration(locations={"xml파일의 이름을 포함한 경로"})
+			위 처럼 설정하면 Context XML 파일을 Load 해 온다.
+		-->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>4.1.6.RELEASE</version>
+		</dependency>
+		
+		<!-- 
+			Logback 의존 라이브러리 추가.
+			slf4j-api, jcl-over-slf4j, logback-classic, logback-ext-spring
+			위 4개 라이브러리가 필요하다.
+			
+			Logback 은 SLF4J 인터페이스를 구현한 로깅 솔루션으로
+			slf4j 를 이용해서 사용해야 한다. 
+			그러므로 slf4j-api를 임포트 한다.
+		-->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.12</version>
+		</dependency>
+		<!-- 
+			Java Commons Logging Over SLF4J 의 약자로
+			Spring이나 기타 다른 라이브러리들이
+			Commons-Logging 으로 로그를 남길 때
+			SLF4J를 사용할 수 있도록 변경 해주는 라이브러리다.
+			별다른 설정은 필요없다.
+		-->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>1.7.12</version>
+		</dependency>
+		<!-- 
+			SLF4J 인터페이스를 사용할 Logback 라이브러리.
+			src/main/resource 아래에 logback.xml 파일을
+			만들어주어야 한다.
+			
+			logback.xml 파일을 만들지 않을 경우,
+			라이브러리가 포함하고 있는 기본 logback.xml 파일을 사용한다.
+		-->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.1.3</version>
+		</dependency>
+		<!-- 
+			프로젝트를 진행하다 보면 logback.xml 파일의 이름을 따로 변경하고
+			싶을 때가 종종 발생한다.
+			
+			Windows 용 / Linux 용 으로 구분하거나
+			개발서버, 검증서버, 운영서버 용으로 따로 구분하거나 할 때
+			파일의 이름을 변경할 수 있도록 지원해주는 라이브러리다.
+			
+			LogbackConfigListener 를 Web.xml에 등록해서 사용한다.
+		-->
+		<dependency>
+			<groupId>org.logback-extensions</groupId>
+			<artifactId>logback-ext-spring</artifactId>
+			<version>0.1.2</version>
+		</dependency>
+		
+		<!-- 
+			Ajax 통신을 할 때 가장 많이 쓰이는 Return Type 은
+			JSON Type 이다.
+			
+			기존의 방법대로라면 JSON Type을 일일이 String 으로 작성해서
+			리턴시켜야 하는데, 이 라이브러리는 
+			@ResponseBody 라는 Annotation을 이용해서
+			VO(Value Object) 를 리턴시키면
+			자동으로 JSON Type으로 변경 시켜준다.
+			
+			또한, JSP 에서 데이터를 받을 때 JSON Parse 를 할 필요도 없다.
+			
+			@RequestMapping("/getJson")
+			@ResponseBody
+			public MemberInfoVO getJson() {
+				MemberInfoVO memberInfo = new MemberInfoVO();
+				memberInfo.setResult(true);
+				memberInfo.setName("장민창");
+				memberInfo.setPhoneNumber("010-2737-2604");
+				return memberInfo;
+			}
+		-->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.5.2</version>
+		</dependency>
+		
+		<!-- 
+			Apache 재단에서 개발한 파일 업로드 라이브러리다.
+			MultipartViewResolver 를 이용해 파일을 업로드 시킨다.
+			MultipartViewResolver 로 파일을 전송시키기 위해서는
+			form 엘리먼트에 enctype="multipart/formdata" 라는 
+			속성을 부여 해야만 하며,
+			Controller 에서는 MultipartHttpServletRequest 를 
+			이용해서 파라미터를 받아온다.
+			
+			전달된 파일은 
+			MultipartHttpServletRequest.getFile("fileElementName");
+			을 통해서 가져온다.
+			
+			Command 객체에는 그냥 MultipartFile 이라고만 적어주면
+			파일을 알아서 넣어준다.
+			
+			전달된 파일을 저장하기 위해서는 
+			MultipartFile.transferTo(목적지);
+			명령어를 사용한다.
+		-->
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>1.3.1</version>
+		</dependency>
+		
+		<!--
+			SpringFramework 4.0 부터 추가된 모듈.
+			현재까지는 SockJS 만 지원한다.
+			
+			HTML5에서 WebSocket을 편리하게 사용할 수 있도록
+			추상화 시켜놓은 모듈.
+			
+			Servlet 3.0 을 지원하는 WAS / Container 만 사용할 수 있다. 
+		-->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-websocket</artifactId>
+			<version>4.1.6.RELEASE</version>
+		</dependency>
+		
+		<!-- 
+			Connection Pool을 쉽게 생성할 수 있도록 추상화 시킨 라이브러리
+			com.mchange.v2.c3p0.ComboPooledDataSource
+			클래스를 통해서 Connection Pool을 설정한다.
+			Spring 교안 192, 193 슬라이드 참고
+			
+			빠른 처리/대응을 위해서 여러 개의 Connection을 미리 만들어 둔다.
+			기본 설정으로는 최대 15개의 Connection을 생성한다.
+		-->
+		<dependency>
+			<groupId>com.mchange</groupId>
+			<artifactId>c3p0</artifactId>
+			<version>0.9.5</version>
+		</dependency>
+		
+		<!--
+			Spring 프로젝트에서 가장 많이 쓰이는 ORM Framework
+			쿼리의 구조적인 관리가 가능해지며
+			쿼리의 실행 및 트랜잭션을 간편하게 해준다.
+			
+			mybatis-spring, mybatis, spring-jdbc 가 필요하다.
+			
+			mybatis-spring은 Spring이 MyBatis를 정식지원하지 않기 때문에
+			MyBatis 개발사에서 따로 만든 연동 모듈.
+			MyBatis를 사용하기 위해서는 꼭 필요하다.
+			
+			* Spring이 정식지원하는 ORM은 Spring-JPA 가 유일하다.
+		-->
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis-spring</artifactId>
+			<version>1.2.2</version>
+		</dependency>
+		<!-- 
+			MyBatis 라이브러리.
+			Configure XML, Mapper XML 을 통해서 쿼리의 구조적인 관리를
+			가능하게 해준다.
+			
+			XML의 Query를 사용하기 위해서는
+			SQLSessionFactory, SQLSessionTemplate 이 필요하며
+			DAO 클래스에서는
+			SQLSessionDaoSupport 를 상속 받아야만 한다.
+		-->
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.2.8</version>
+		</dependency>
+		<!-- 
+			JDBC API를 쓰기 편리하게 Spring에서 추상화 시켜놓은 모듈
+			MyBatis가 이 모듈을 사용한다.
+		-->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>4.1.6.RELEASE</version>
+		</dependency>
+		
+		<!-- 
+			Spring AOP의 핵심 모듈 중 하나.
+			Weaving 이라는 행위를 통해서 여러 클래스를 하나의 클래스 인 것처럼
+			변경해 준다.
+			
+			Compile 단계에서 Class 파일에 직접적인 수정을 한다.
+		-->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+			<version>1.8.5</version>
+		</dependency>
+		
+		<!-- 
+			여러 기능들에 공통된 기능을 수행하게 하고싶을 때 AOP 라는 것을 사용한다.
+			AOP는 기능이라기보다는 프로그래밍의 방식 중 하나로
+			Aspect Oriented Programming (관점 지향 프로그래밍)이라 부른다.
+			Spring AOP, PointCut, Advisor 를 통해서 
+			공통 기능을 수행하고 싶은 위치를 설정한다.
+			
+			Spring 교안 70 ~ 78 슬라이드 참고
+		-->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+			<version>4.1.6.RELEASE</version>
+		</dependency>
+		
+		<!--
+			MyBatis에서 실행되는 쿼리들의 결과 및 에러를 로그를 통해
+			보기 위한 라이브러리
+			net.sf.log4jdbc.DriverSpy
+			jdbc:log4jdbc:oracle:thin:
+			위 두개 클래스를 Connection Pool 설정에 사용한다.
+		-->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.12</version>
+		</dependency>
+		
+		
+		<!-- 
+			패스워드 암호화 라이브러리.
+			Database에 Password나 민감한 개인정보를 저장할 때
+			반드시 암호화 시켜서 저장해야 한다.
+			
+			이 때 암호화 하는 방식은 복호화가 불가능해야 한다.
+			jbcrypt 라이브러리는 암호화를 할 때 Salt 값을 사용해
+			암호화 하기 때문에 복호화가 불가능하다.
+			
+			HuCloud Login 및 Regist 로직 참고.
+		-->
+		<dependency>
+			<groupId>org.mindrot</groupId>
+			<artifactId>jbcrypt</artifactId>
+			<version>0.3m</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.directory.studio</groupId>
+			<artifactId>org.apache.commons.codec</artifactId>
+			<version>1.8</version>
+		</dependency>
+		
+		<!-- JSON library -->
+		<dependency>  
+       		<groupId>org.codehaus.jackson</groupId>
+       		<artifactId>jackson-mapper-asl</artifactId>
+       		<version>1.8.5</version>
+		</dependency>
+		      
+		<!-- MySQL JDBC Driver -->
+		<dependency>
+    		<groupId>mysql</groupId>
+    		<artifactId>mysql-connector-java</artifactId>
+    		<version>5.1.31</version>
+		</dependency>
+		
+		<!-- JDBC Template -->
+		<dependency>
+    		<groupId>org.springframework</groupId>
+    		<artifactId>spring-jdbc</artifactId>
+    		<version>4.0.3.RELEASE</version>
+		</dependency>
+				
+		<dependency>
+        	<groupId>net.sf.json-lib</groupId>
+        	<artifactId>json-lib-ext-spring</artifactId>
+        	<version>1.0.2</version>
+        </dependency>
+        
+	</dependencies>   
+
+    <build>
+		
+		<!-- 
+			Reources 는 Maven 으로 빌드할 때
+			포함되어야 할 것들을 정의한다.
+			현재 프로젝트에서는 MyBatis 관련 Mapper XML 파일들이
+			src/main/java ~~~~~~~ dao/sql 안에 포함되기 때문에
+			Maven 빌드 시 이 파일들을 같이 빌드 할 수 있도록
+			설정해준다.
+		-->
+		<resources>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
+		
+		
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
